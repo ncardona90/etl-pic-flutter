@@ -1,14 +1,14 @@
 // lib/features/dashboard/dashboard_ui_provider.dart
 import 'package:flutter/material.dart';
+import 'chart_keys.dart';
 
 class DashboardUIProvider extends ChangeNotifier {
-  String _selectedChartTitle =
-      'Distribución de la población por curso de vida'; // Gráfico por defecto
+  ChartKey _selectedChart = ChartKey.cursoVida;
 
-  String get selectedChartTitle => _selectedChartTitle;
+  ChartKey get selectedChart => _selectedChart;
 
-  void selectChart(String title) {
-    _selectedChartTitle = title;
+  void selectChart(ChartKey key) {
+    _selectedChart = key;
     notifyListeners();
   }
 }
