@@ -1,0 +1,283 @@
+// --- lib/features/upload/upload_provider.dart ---
+
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart'; // Importar material para SnackBar
+import 'package:file_picker/file_picker.dart';
+import 'package:crypto/crypto.dart';
+import 'package:collection/collection.dart';
+import 'package:excel/excel.dart';
+
+import 'package:etl_tamizajes_app/core/services/firebase_service.dart';
+import 'package:etl_tamizajes_app/core/models/tamizaje_model.dart';
+import 'package:etl_tamizajes_app/core/models/etl_result.dart';
+
+class UploadProvider with ChangeNotifier {
+  UploadProvider({required FirebaseService firebaseService})
+    : _firebaseService = firebaseService;
+  final FirebaseService _firebaseService;
+
+  bool _isLoading = false;
+  String _loadingMessage = '';
+  List<PlatformFile> _selectedFiles = [];
+  EtlResult? _lastResult;
+
+  bool get isLoading => _isLoading;
+  String get loadingMessage => _loadingMessage;
+  List<PlatformFile> get selectedFiles => _selectedFiles;
+  EtlResult? get lastResult => _lastResult;
+
+  Future<void> pickFiles() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+      allowMultiple: true,
+      withData: true,
+    );
+    if (result != null) {
+      _selectedFiles = result.files;
+      _lastResult = null;
+      notifyListeners();
+    }
+  }
+
+  void clearSelection() {
+    _selectedFiles = [];
+    _lastResult = null;
+    notifyListeners();
+  }
+
+  Future<EtlResult?> processAndUploadFiles() async {
+    if (_selectedFiles.isEmpty) return null;
+    _setLoading(true, 'Iniciando proceso...');
+
+    _setLoading(true, 'Verificando archivos procesados...');
+    final newFiles = <PlatformFile>[];
+    final duplicateFileNames = <String>[];
+    for (final file in _selectedFiles) {
+      final hash = _calculateFileHash(file.bytes!);
+      if (await _firebaseService.isFileProcessed(hash)) {
+        duplicateFileNames.add(file.name);
+      } else {
+        newFiles.add(file);
+      }
+    }
+
+    if (newFiles.isEmpty) {
+      _lastResult = EtlResult(
+        validRecords: [],
+        failedRecords: [],
+        duplicateFileCount: duplicateFileNames.length,
+        duplicateFileNames: duplicateFileNames,
+      );
+      _setLoading(false);
+      return _lastResult;
+    }
+
+    _setLoading(true, 'Leyendo y consolidando registros...');
+    final allRecords = <Map<String, dynamic>>[];
+    for (var file in newFiles) {
+      try {
+        final content = utf8.decode(file.bytes!);
+        final jsonData = json.decode(content) as List<dynamic>;
+        allRecords.addAll(
+          jsonData.cast<Map<String, dynamic>>().map(
+            (r) => {...r, '_sourceFile': file.name},
+          ),
+        );
+      } catch (e) {
+        debugPrint('Error decodificando ${file.name}: $e');
+      }
+    }
+
+    _setLoading(true, 'Validando y limpiando datos...');
+    final etlResult = _processAndValidateData(allRecords);
+
+    if (etlResult.validRecords.isNotEmpty) {
+      _setLoading(
+        true,
+        'Guardando ${etlResult.validRecords.length} registros válidos...',
+      );
+      await _firebaseService.uploadTamizajesBatch(etlResult.validRecords);
+    }
+
+    // Registrar solo los archivos que produjeron registros válidos.
+    final validSourceFiles = etlResult.validRecords
+        .map((r) => r.sourceFile)
+        .toSet();
+    final filesToRegister = newFiles
+        .where((f) => validSourceFiles.contains(f.name))
+        .toList();
+
+    if (filesToRegister.isNotEmpty) {
+      _setLoading(true, 'Registrando archivos procesados...');
+      final newFileHashes = filesToRegister
+          .map((f) => _calculateFileHash(f.bytes!))
+          .toList();
+      await _firebaseService.registerProcessedFiles(
+        newFileHashes,
+        filesToRegister.map((f) => f.name).toList(),
+      );
+    }
+
+    _lastResult = EtlResult(
+      validRecords: etlResult.validRecords,
+      failedRecords: etlResult.failedRecords,
+      duplicateFileCount: duplicateFileNames.length,
+      duplicateFileNames: duplicateFileNames,
+    );
+    _setLoading(false);
+    return _lastResult;
+  }
+
+  String _calculateFileHash(Uint8List bytes) =>
+      sha256.convert(bytes).toString();
+
+  EtlResult _processAndValidateData(List<Map<String, dynamic>> records) {
+    final validRecords = <Tamizaje>[];
+    final failedRecords = <Map<String, dynamic>>[];
+    final recordsByDoc = records.groupListsBy(
+      (r) => r['numero_documento']?.toString(),
+    );
+
+    final requiredFields = {
+      'fecha_intervencion',
+    'entorno_intervencion',
+    'nombres',
+    'apellidos',
+    'numero_documento',
+    'fecha_nacimiento',
+    'edad',
+    'sexo_asignado_nacimiento',
+    'comuna',
+    'talla',
+    'peso',
+    'presion_sistolica',
+    'presion_diastolica',
+    'circunferencia_abdominal',
+    'actividad_fisica',
+    'frecuencia_frutas_verduras',
+    'medicacion_hipertension',
+    'glucosa_alta_historico',
+    'antecedentes_familiares_diabetes',
+    'es_diabetico',
+    'fuma',
+    'enfermedad_cardiovascular_renal_colesterol',
+    };
+
+    recordsByDoc.forEach((docNum, group) {
+      if (docNum == null || docNum.isEmpty) {
+        for (var record in group) {
+          failedRecords.add({
+            ...record,
+            'motivo_fallo': 'Número de documento faltante o inválido.',
+          });
+        }
+        return;
+      }
+
+      Map<String, dynamic>? idealCandidate;
+      for (final record in group) {
+        final missingFields = requiredFields.where((field) {
+          final value = record[field];
+          return value == null || (value is String && value.trim().isEmpty);
+        }).toList();
+
+        if (missingFields.isEmpty) {
+          idealCandidate = record;
+          break;
+        }
+      }
+
+      if (idealCandidate != null) {
+        // Añadir a la lista de fallidos los otros registros del grupo
+        failedRecords.addAll(
+          group
+              .where((r) => r != idealCandidate)
+              .map(
+                (r) => {
+                  ...r,
+                  'motivo_fallo':
+                      'Duplicado dentro del lote (se conservó el registro más completo).',
+                },
+              ),
+        );
+
+        try {
+          validRecords.add(Tamizaje.fromMap(idealCandidate));
+        } catch (e) {
+          idealCandidate['motivo_fallo'] =
+              'Error de conversión de datos: ${e.toString()}';
+          failedRecords.add(idealCandidate);
+        }
+      } else {
+        final recordToReport = group.first;
+        final missingFields = requiredFields.where((field) {
+          final value = recordToReport[field];
+          return value == null || (value is String && value.trim().isEmpty);
+        }).toList();
+        recordToReport['motivo_fallo'] =
+            'Datos faltantes en todos los registros: ${missingFields.join(', ')}';
+        failedRecords.add(recordToReport);
+      }
+    });
+    return EtlResult(validRecords: validRecords, failedRecords: failedRecords);
+  }
+
+  // --- MÉTODO DE DESCARGA AJUSTADO ---
+  Future<void> downloadFailedRecordsReport(BuildContext context) async {
+    if (_lastResult == null || _lastResult!.failedRecords.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay registros con fallos para reportar.'),
+          backgroundColor: Colors.amber,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final excel = Excel.createExcel();
+      final sheet = excel['Registros No Cargados'];
+
+      final headers = _lastResult!.failedRecords.first.keys.toList();
+      sheet.appendRow(headers.map((h) => TextCellValue(h)).toList());
+
+      for (final record in _lastResult!.failedRecords) {
+        sheet.appendRow(
+          headers
+              .map((h) => TextCellValue(record[h]?.toString() ?? ''))
+              .toList(),
+        );
+      }
+
+      final fileBytes = excel.save(
+        fileName: 'Reporte_Registros_No_Cargados.xlsx',
+      );
+
+      if (fileBytes != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reporte generado. La descarga comenzará...'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        throw Exception('Error al guardar el archivo Excel.');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al generar el reporte: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _setLoading(bool value, [String message = '']) {
+    _isLoading = value;
+    _loadingMessage = message;
+    notifyListeners();
+  }
+}

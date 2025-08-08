@@ -1,0 +1,11 @@
+{"users": [
+{
+  "localId": "yYb5ipyfWTdkBlTxjGxacINb4hl1",
+  "email": "admin@admin.com",
+  "emailVerified": false,
+  "passwordHash": "kLxYLvvuCyVRQjXO6gFDzw8VRpJMnxykf22oTYG5hmsHJ5/v7vrKFyWUzRYmE1+LgAg+se08JSkEy6nHGZ+GdQ==",
+  "salt": "+wVvFw8FGZjn2g==",
+  "createdAt": "1750456727017",
+  "disabled": false,
+  "providerUserInfo": []
+}]}

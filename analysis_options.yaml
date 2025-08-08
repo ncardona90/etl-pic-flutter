@@ -1,0 +1,40 @@
+# Este archivo configura el analizador estático de Dart (dart analyze)
+# para detectar errores, advertencias y malas prácticas (lints).
+#
+# Documentación oficial:
+# https://dart.dev/guides/language/analysis-options
+
+# Base de reglas recomendadas por Flutter
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    ###### --- Estilo de código y formato --- ######
+    prefer_single_quotes: true         # Prefiere comillas simples sobre dobles
+    always_use_package_imports: true   # Usa imports relativos solo entre archivos del mismo paquete
+    sort_pub_dependencies: true        # Ordena alfabéticamente las dependencias en pubspec.yaml
+    sort_constructors_first: true      # Ordena constructores al inicio de la clase
+    sort_unnamed_constructors_first: true # Pone el constructor sin nombre antes que los nombrados
+
+    ###### --- Seguridad y robustez --- ######
+    avoid_print: true                  # Evita el uso de print; usar Logger en producción
+    avoid_dynamic_calls: true          # Evita llamadas dinámicas sin verificación de tipo
+    avoid_empty_else: true             # Evita bloques else vacíos
+    no_logic_in_create_state: true     # No incluir lógica en createState() de StatefulWidget
+
+    ###### --- Legibilidad y mantenimiento --- ######
+    unnecessary_this: true             # Evita el uso innecesario de `this`
+    prefer_final_locals: true          # Usa variables locales finales cuando no cambian
+    prefer_const_constructors: true    # Usa constructores const siempre que sea posible
+    prefer_const_literals_to_create_immutables: true  # Usa const también para listas, maps y sets
+    avoid_redundant_argument_values: true # Evita pasar argumentos que ya son el valor por defecto
+
+    ###### --- Buenas prácticas en Flutter --- ######
+    avoid_unnecessary_containers: true # No usar Containers innecesarios
+    sized_box_for_whitespace: true     # Prefiere SizedBox en vez de Container para espacios
+    use_key_in_widget_constructors: true # Usa Key en los constructores de widgets
+
+# Puedes ignorar reglas específicas por línea:
+#   // ignore: avoid_print
+# O por archivo:
+#   // ignore_for_file: avoid_print, prefer_const_constructors
