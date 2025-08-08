@@ -5,6 +5,18 @@ import 'package:provider/provider.dart';
 import 'package:etl_tamizajes_app/core/models/app_user.dart';
 import 'package:etl_tamizajes_app/features/user_management/user_management_provider.dart';
 
+void showUserDialog(BuildContext context, {AppUser? user}) {
+  showDialog(
+    context: context,
+    builder: (_) {
+      return ChangeNotifierProvider.value(
+        value: context.read<UserManagementProvider>(),
+        child: UserEditDialog(user: user),
+      );
+    },
+  );
+}
+
 class UserManagementView extends StatelessWidget {
   const UserManagementView({super.key});
 
@@ -18,25 +30,13 @@ class UserManagementView extends StatelessWidget {
         floatingActionButton: Builder(
           builder: (context) {
             return FloatingActionButton(
-              onPressed: () => _showUserDialog(context),
+              onPressed: () => showUserDialog(context),
               tooltip: 'Añadir Usuario',
               child: const Icon(Icons.add),
             );
           },
         ),
       ),
-    );
-  }
-
-  void _showUserDialog(BuildContext context, {AppUser? user}) {
-    showDialog(
-      context: context,
-      builder: (_) {
-        return ChangeNotifierProvider.value(
-          value: context.read<UserManagementProvider>(),
-          child: UserEditDialog(user: user),
-        );
-      },
     );
   }
 }
@@ -78,7 +78,7 @@ class UserList extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.blue),
-                    onPressed: () => _showUserDialog(context, user: user),
+                    onPressed: () => showUserDialog(context, user: user),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
@@ -88,18 +88,6 @@ class UserList extends StatelessWidget {
               ),
             );
           },
-        );
-      },
-    );
-  }
-
-  void _showUserDialog(BuildContext context, {AppUser? user}) {
-    showDialog(
-      context: context,
-      builder: (_) {
-        return ChangeNotifierProvider.value(
-          value: context.read<UserManagementProvider>(),
-          child: UserEditDialog(user: user),
         );
       },
     );
