@@ -1,6 +1,7 @@
 // lib/features/auth/login_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:etl_tamizajes_app/features/auth/auth_provider.dart';
 
@@ -71,10 +72,10 @@ class _LoginViewState extends State<LoginView> {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: const Text(
-                          'Red de Salud\ndel Oriente',
+                        child: Text(
+                          AppLocalizations.of(context)!.networkTitle,
                           textAlign: TextAlign.start,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -109,18 +110,19 @@ class _LoginViewState extends State<LoginView> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Bienvenido',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context)!.welcome,
+                          style: const TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Inicia sesión para acceder a la plataforma.',
-                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                        Text(
+                          AppLocalizations.of(context)!.loginPrompt,
+                          style:
+                              const TextStyle(fontSize: 16, color: Colors.black54),
                         ),
                         const SizedBox(height: 32),
 
@@ -128,7 +130,7 @@ class _LoginViewState extends State<LoginView> {
                         TextFormField(
                           controller: _emailController,
                           decoration: InputDecoration(
-                            labelText: 'Correo Electrónico',
+                            labelText: AppLocalizations.of(context)!.emailLabel,
                             prefixIcon: const Icon(Icons.email_outlined),
                             filled: true,
                             fillColor: Colors.grey.shade50,
@@ -150,7 +152,8 @@ class _LoginViewState extends State<LoginView> {
                             if (value == null ||
                                 value.isEmpty ||
                                 !value.contains('@')) {
-                              return 'Por favor, introduce un correo válido.';
+                              return AppLocalizations.of(context)!
+                                  .invalidEmailError;
                             }
                             return null;
                           },
@@ -162,7 +165,7 @@ class _LoginViewState extends State<LoginView> {
                           controller: _passwordController,
                           obscureText: !_isPasswordVisible,
                           decoration: InputDecoration(
-                            labelText: 'Contraseña',
+                            labelText: AppLocalizations.of(context)!.passwordLabel,
                             prefixIcon: const Icon(Icons.lock_outline),
                             filled: true,
                             fillColor: Colors.grey.shade50,
@@ -193,7 +196,8 @@ class _LoginViewState extends State<LoginView> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Por favor, introduce tu contraseña.';
+                              return AppLocalizations.of(context)!
+                                  .emptyPasswordError;
                             }
                             return null;
                           },
@@ -221,9 +225,9 @@ class _LoginViewState extends State<LoginView> {
                                 ),
                                 elevation: 2,
                               ),
-                              child: const Text(
-                                'Iniciar Sesión',
-                                style: TextStyle(
+                              child: Text(
+                                AppLocalizations.of(context)!.loginButton,
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,

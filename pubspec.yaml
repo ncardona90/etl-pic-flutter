@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # Firebase
   firebase_core: ^4.0.0
@@ -37,9 +39,9 @@ dependencies:
 
   # Utilidades
   collection: ^1.18.0
-  intl: ^0.19.0 # <-- Se ajusta a una versión compatible
   google_fonts: ^6.2.1
   geolocator: ^14.0.2
+  intl: ^0.19.0 # <-- Se ajusta a una versión compatible
 
 dev_dependencies:
   flutter_test:
@@ -53,5 +55,6 @@ dependency_overrides:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/images/

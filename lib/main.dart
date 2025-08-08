@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:etl_tamizajes_app/firebase_options.dart';
@@ -67,8 +68,11 @@ class MyApp extends StatelessWidget {
           final router = AppRouter(authProvider).router;
 
           return MaterialApp.router(
-            title: 'ETL Tamizajes',
             debugShowCheckedModeBanner: false,
+            onGenerateTitle: (context) =>
+                AppLocalizations.of(context)!.appTitle,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             theme: ThemeData(
               primarySwatch: Colors.blue,
               useMaterial3: true,
