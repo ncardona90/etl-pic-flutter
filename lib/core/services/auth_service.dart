@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:etl_tamizajes_app/core/models/app_user.dart';
+import 'package:flutter/foundation.dart';
 
 class AuthService {
   final firebase_auth.FirebaseAuth _firebaseAuth =
@@ -56,7 +57,7 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      print('Error al obtener usuario de Firestore: $e');
+      debugPrint('Error al obtener usuario de Firestore: $e');
       return null;
     }
   }
