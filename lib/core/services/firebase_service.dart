@@ -116,6 +116,16 @@ class FirebaseService {
     List<String> fileHashes,
     List<String> fileNames,
   ) async {
+    if (fileHashes.length != fileNames.length) {
+      debugPrint(
+        'registerProcessedFiles: fileHashes length (${fileHashes.length}) '
+        'does not match fileNames length (${fileNames.length}).',
+      );
+      throw ArgumentError(
+        'fileHashes and fileNames must have the same length',
+      );
+    }
+
     final batch = _db.batch();
     for (int i = 0; i < fileHashes.length; i++) {
       final docRef = _processedFilesCollection.doc(fileHashes[i]);
