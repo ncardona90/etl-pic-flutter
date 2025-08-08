@@ -1,0 +1,19 @@
+{
+  "@@locale": "es",
+  "appTitle": "ETL Tamizajes",
+  "networkTitle": "Red de Salud\ndel Oriente",
+  "welcome": "Bienvenido",
+  "loginPrompt": "Inicia sesión para acceder a la plataforma.",
+  "emailLabel": "Correo electrónico",
+  "invalidEmailError": "Por favor, introduce un correo válido.",
+  "passwordLabel": "Contraseña",
+  "emptyPasswordError": "Por favor, introduce tu contraseña.",
+  "loginButton": "Iniciar Sesión",
+  "upload": "Cargar",
+  "records": "Registros",
+  "dashboard": "Dashboard",
+  "users": "Usuarios",
+  "master": "Maestro",
+  "logout": "Cerrar Sesión",
+  "userPlaceholder": "Usuario"
+}

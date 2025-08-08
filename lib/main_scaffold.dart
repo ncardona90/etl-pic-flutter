@@ -1,6 +1,7 @@
 // lib/main_scaffold.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:etl_tamizajes_app/features/auth/auth_provider.dart';
@@ -50,7 +51,7 @@ class MainScaffold extends StatelessWidget {
       return Scaffold(
         body: child,
         appBar: AppBar(
-          title: const Text('ETL Tamizajes'),
+          title: Text(AppLocalizations.of(context)!.appTitle),
           backgroundColor: Colors.white,
           elevation: 1,
         ),
@@ -85,7 +86,7 @@ class _AppNavigationRail extends StatelessWidget {
         (context.findAncestorWidgetOfExactType<MainScaffold>())!
             ._onDestinationSelected;
 
-    final destinations = _buildDestinations(authProvider);
+    final destinations = _buildDestinations(authProvider, context);
 
     return NavigationRail(
       selectedIndex: selectedIndex < destinations.length ? selectedIndex : 0,
@@ -129,7 +130,7 @@ class _AppDrawer extends StatelessWidget {
         (context.findAncestorWidgetOfExactType<MainScaffold>())!
             ._onDestinationSelected;
 
-    final destinations = _buildDestinations(authProvider);
+    final destinations = _buildDestinations(authProvider, context);
 
     return Drawer(
       child: Column(
@@ -161,32 +162,34 @@ class _AppDrawer extends StatelessWidget {
 
 // --- HELPERS COMPARTIDOS ---
 
-List<NavigationRailDestination> _buildDestinations(AuthProvider authProvider) {
+List<NavigationRailDestination> _buildDestinations(
+    AuthProvider authProvider, BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
   final allDestinations = [
-    const NavigationRailDestination(
-      icon: Icon(Icons.cloud_upload_outlined),
-      selectedIcon: Icon(Icons.cloud_upload),
-      label: Text('Cargar'),
+    NavigationRailDestination(
+      icon: const Icon(Icons.cloud_upload_outlined),
+      selectedIcon: const Icon(Icons.cloud_upload),
+      label: Text(l10n.upload),
     ),
-    const NavigationRailDestination(
-      icon: Icon(Icons.folder_copy_outlined),
-      selectedIcon: Icon(Icons.folder_copy),
-      label: Text('Registros'),
+    NavigationRailDestination(
+      icon: const Icon(Icons.folder_copy_outlined),
+      selectedIcon: const Icon(Icons.folder_copy),
+      label: Text(l10n.records),
     ),
-    const NavigationRailDestination(
-      icon: Icon(Icons.dashboard_outlined),
-      selectedIcon: Icon(Icons.dashboard),
-      label: Text('Dashboard'),
+    NavigationRailDestination(
+      icon: const Icon(Icons.dashboard_outlined),
+      selectedIcon: const Icon(Icons.dashboard),
+      label: Text(l10n.dashboard),
     ),
-    const NavigationRailDestination(
-      icon: Icon(Icons.people_outline),
-      selectedIcon: Icon(Icons.people),
-      label: Text('Usuarios'),
+    NavigationRailDestination(
+      icon: const Icon(Icons.people_outline),
+      selectedIcon: const Icon(Icons.people),
+      label: Text(l10n.users),
     ),
-    const NavigationRailDestination(
-      icon: Icon(Icons.storage_outlined),
-      selectedIcon: Icon(Icons.storage),
-      label: Text('Maestro'),
+    NavigationRailDestination(
+      icon: const Icon(Icons.storage_outlined),
+      selectedIcon: const Icon(Icons.storage),
+      label: Text(l10n.master),
     ),
   ];
 
@@ -226,7 +229,7 @@ Widget _buildUserHeader(BuildContext context, AuthProvider authProvider) {
         ),
         const SizedBox(height: 12),
         Text(
-          user?.displayName ?? 'Usuario',
+          user?.displayName ?? AppLocalizations.of(context)!.userPlaceholder,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -245,6 +248,7 @@ Widget _buildUserHeader(BuildContext context, AuthProvider authProvider) {
 }
 
 Widget _buildLogoutButton(BuildContext context, {bool isDrawer = false}) {
+  final l10n = AppLocalizations.of(context)!;
   final content = Row(
     mainAxisAlignment: isDrawer
         ? MainAxisAlignment.start
@@ -253,9 +257,9 @@ Widget _buildLogoutButton(BuildContext context, {bool isDrawer = false}) {
       const Icon(Icons.logout, color: Colors.redAccent),
       if (isDrawer) ...[
         const SizedBox(width: 16),
-        const Text(
-          'Cerrar Sesión',
-          style: TextStyle(
+        Text(
+          l10n.logout,
+          style: const TextStyle(
             color: Colors.redAccent,
             fontWeight: FontWeight.bold,
           ),
@@ -277,6 +281,6 @@ Widget _buildLogoutButton(BuildContext context, {bool isDrawer = false}) {
   return IconButton(
     icon: content,
     onPressed: () => context.read<AuthProvider>().signOut(),
-    tooltip: 'Cerrar Sesión',
+    tooltip: l10n.logout,
   );
 }

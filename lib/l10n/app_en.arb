@@ -1,0 +1,19 @@
+{
+  "@@locale": "en",
+  "appTitle": "ETL Screenings",
+  "networkTitle": "Eastern Health\nNetwork",
+  "welcome": "Welcome",
+  "loginPrompt": "Sign in to access the platform.",
+  "emailLabel": "Email",
+  "invalidEmailError": "Please enter a valid email.",
+  "passwordLabel": "Password",
+  "emptyPasswordError": "Please enter your password.",
+  "loginButton": "Log In",
+  "upload": "Upload",
+  "records": "Records",
+  "dashboard": "Dashboard",
+  "users": "Users",
+  "master": "Master",
+  "logout": "Log Out",
+  "userPlaceholder": "User"
+}
